@@ -1,0 +1,42 @@
+{
+	"name": "data-processing",
+	"version": "1.0.0",
+	"description": "Data processing scripts for AI Impact Visualization",
+	"main": "server.js",
+	"author": "Andriy Polukhin",
+	"type": "module",
+	"scripts": {
+		"start": "node server.js",
+		"dev": "nodemon server.js",
+		"setup": "npm run create-db && npm run create-fns && npm run seed-db",
+		"create-db": "node scripts/createDb.js",
+		"create-fns": "node scripts/createDbFns.js",
+		"seed-db": "node scripts/seedDb.js",
+		"drop-db": "node scripts/dropDb.js",
+		"reset-db": "node scripts/resetDb.js"
+	},
+	"keywords": [
+		"ai",
+		"visualization",
+		"data",
+		"nodejs",
+		"postgresql"
+	],
+	"dependencies": {
+		"cors": "^2.8.5",
+		"csv-parser": "^3.2.0",
+		"dotenv": "^16.4.7",
+		"express": "^4.21.2",
+		"fs": "^0.0.1-security",
+		"morgan": "^1.10.0",
+		"path": "^0.12.7",
+		"pg": "^8.14.1",
+		"pg-copy-streams": "^6.0.6",
+		"pg-hstore": "^2.3.4",
+		"pg-promise": "^11.12.1",
+		"sequelize": "^6.37.6"
+	},
+	"devDependencies": {
+		"nodemon": "^3.1.9"
+	}
+}

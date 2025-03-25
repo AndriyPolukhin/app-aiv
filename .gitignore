@@ -1,0 +1,16 @@
+node_modules/
+.env
+backend/data/*
+
+backend/node_modules/
+frontend/node_modules/
+
+backend/scripts/backups
+backend/services/backups
+backend/scripts/functions/materialized
+backend/scripts/functions/procedures
+backend/scripts/functions/views
+backend/scripts/functions/usage
+backend/scripts/functions/indexes
+
+backend/data/
