@@ -36,6 +36,7 @@ export const Commit = sequelize.define(
 		commit_date: {
 			type: DataTypes.DATEONLY,
 			allowNull: false,
+			primaryKey: true,
 		},
 		ai_used: {
 			type: DataTypes.BOOLEAN,
@@ -46,5 +47,5 @@ export const Commit = sequelize.define(
 			allowNull: false,
 		},
 	},
-	{ timestamps: false, tableName: 'commits' },
+	{ timestamps: false, tableName: 'commits', indexes: [] },
 )

@@ -79,7 +79,7 @@ export async function getProjectMetrics(req, res) {
  */
 export async function getTimelineMetrics(req, res) {
 	try {
-		const timelineData = await AIImpact.getTimelineMetrics()
+		const timelineData = await AIImpactService.getTimelineMetrics()
 		res.json(timelineData)
 	} catch (error) {
 		console.error('Error in getTimelineMetrics:', error)

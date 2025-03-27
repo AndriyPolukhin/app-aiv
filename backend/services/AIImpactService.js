@@ -1,5 +1,6 @@
 import { QueryTypes } from 'sequelize'
 import { sequelize } from '../config/db.js'
+import { Team, Project, Engineer } from '../models/index.js'
 
 /**
  * Calculate the impact of AI on cycle time
@@ -73,7 +74,7 @@ export async function getProjectMetrics() {
  */
 export async function getTimelineMetrics() {
 	const results = await sequelize.query(
-		'SELECT * FROM get_timeline_metrics();',
+		'SELECT * FROM timeline_metrics_materialized;',
 		{
 			type: QueryTypes.SELECT,
 		},

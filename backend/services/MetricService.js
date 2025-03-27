@@ -52,13 +52,17 @@ export const calculateAIImpact = async (filters = {}, options = {}) => {
  * @returns {Promise<Array>} - Team metrics array
  */
 export const getTeamMetrics = async (options = {}) => {
-	const { maxAgeHours = 24, forceRefresh = false, teamId = null } = options
+	const { teamId = null } = options
+
+	if (typeof teamId !== 'number' || teamId <= 0) {
+		throw new Error('teamId must be a positive number')
+	}
 
 	return sequelize.query(
-		'SELECT get_team_metrics_optimized(:maxAgeHours, :forceRefresh, :teamId)',
+		'SELECT * FROM team_metrics_materialized WHERE team_id = :teamId',
 		{
 			type: QueryTypes.SELECT,
-			replacements: { maxAgeHours, forceRefresh, teamId },
+			replacements: { teamId },
 		},
 	)
 }
@@ -69,17 +73,17 @@ export const getTeamMetrics = async (options = {}) => {
  * @returns {Promise<Array>} - Engineer metrics array
  */
 export const getEngineerMetrics = async (options = {}) => {
-	const {
-		maxAgeHours = 24,
-		forceRefresh = false,
-		engineerId = null,
-	} = options
+	const { engineerId = null } = options
+
+	if (typeof engineerId !== 'number' || engineerId <= 0) {
+		throw new Error('engineerId must be a positive number')
+	}
 
 	return sequelize.query(
-		'SELECT get_engineer_metrics_optimized(:maxAgeHours, :forceRefresh, :engineerId)',
+		'SELECT * FROM engineer_metrics_materialized WHERE engineer_id = :engineerId',
 		{
 			type: QueryTypes.SELECT,
-			replacements: { maxAgeHours, forceRefresh, engineerId },
+			replacements: { engineerId },
 		},
 	)
 }
@@ -93,10 +97,54 @@ export const getProjectMetrics = async (options = {}) => {
 	const { maxAgeHours = 24, forceRefresh = false, projectId = null } = options
 
 	return sequelize.query(
-		'SELECT get_project_metrics_optimized(:maxAgeHours, :forceRefresh, :projectId)',
+		'SELECT * FROM project_metrics_materialized WHERE project_id = :projectId',
 		{
 			type: QueryTypes.SELECT,
-			replacements: { maxAgeHours, forceRefresh, projectId },
+			replacements: { projectId },
+		},
+	)
+	// return sequelize.query(
+	// 	'SELECT get_project_metrics_optimized(:maxAgeHours, :forceRefresh, :projectId)',
+	// 	{
+	// 		type: QueryTypes.SELECT,
+	// 		replacements: { maxAgeHours, forceRefresh, projectId },
+	// 	},
+	// )
+}
+
+/**
+ * Get metrics for a specific category
+ * @param {String} category - Category name
+ * @param {Object} options - Query options
+ * @returns {Promise<Array>} - Category metrics
+ */
+export const getCategoriesMetrics = async (options = {}) => {
+	return sequelize.query('SELECT * FROM category_metrics_materialized', {
+		type: QueryTypes.SELECT,
+	})
+}
+
+export const getAIImpactSummary = async (options = {}) => {
+	return sequelize.query('SELECT * FROM ai_impact_summary', {
+		type: QueryTypes.SELECT,
+	})
+}
+
+/**
+ * Get metrics for a specific category
+ * @param {String} category - Category name
+ * @param {Object} options - Query options
+ * @returns {Promise<Array>} - Category metrics
+ */
+export const getCategoryMetrics = async (options = {}) => {
+	const { category } = options
+	console.log('SERVICE: ', category)
+
+	return sequelize.query(
+		'SELECT * FROM category_metrics_materialized WHERE category = :category',
+		{
+			type: QueryTypes.SELECT,
+			replacements: { category },
 		},
 	)
 }
@@ -129,24 +177,6 @@ export const getTimelineMetrics = async (
 		},
 	)
 	return result
-}
-
-/**
- * Get metrics for a specific category
- * @param {String} category - Category name
- * @param {Object} options - Query options
- * @returns {Promise<Array>} - Category metrics
- */
-export const getCategoryMetrics = async (category, options = {}) => {
-	const { maxAgeHours = 24, forceRefresh = false } = options
-
-	return sequelize.query(
-		'SELECT get_category_metrics(:maxAgeHours, :forceRefresh, :category)',
-		{
-			type: QueryTypes.SELECT,
-			replacements: { maxAgeHours, forceRefresh, category },
-		},
-	)
 }
 
 /**
@@ -244,14 +274,49 @@ export const mapFiltersDimension = (filters) => {
 	return null
 }
 
+/**
+ * Get filter options
+ */
+export async function getFilterOptions() {
+	try {
+		const query = `
+      WITH
+        team_data AS (SELECT team_id as id, team_name as name FROM teams),
+        project_data AS (SELECT project_id as id, project_name as name FROM projects),
+        engineer_data AS (SELECT id, name FROM engineers)
+      SELECT
+        (SELECT json_agg(t) FROM team_data t) as teams,
+        (SELECT json_agg(p) FROM project_data p) as projects,
+        (SELECT json_agg(e) FROM engineer_data e) as engineers;
+    `
+
+		const results = await sequelize.query(query, {
+			type: QueryTypes.SELECT,
+			plain: true,
+		})
+
+		return results || { teams: [], projects: [], engineers: [] }
+	} catch (error) {
+		console.error('Error fetching dimension data:', error)
+		return {
+			teams: [],
+			projects: [],
+			engineers: [],
+		}
+	}
+}
+
 const MetricService = {}
 MetricService.calculateAIImpact = calculateAIImpact
 MetricService.getTeamMetrics = getTeamMetrics
 MetricService.getEngineerMetrics = getEngineerMetrics
 MetricService.getProjectMetrics = getProjectMetrics
 MetricService.getTimelineMetrics = getTimelineMetrics
+MetricService.getCategoriesMetrics = getCategoriesMetrics
 MetricService.getCategoryMetrics = getCategoryMetrics
 MetricService.refreshAllMetrics = refreshAllMetrics
 MetricService.getCrossDimensionalMetrics = getCrossDimensionalMetrics
+MetricService.getAIImpactSummary = getAIImpactSummary
+MetricService.getFilterOptions = getFilterOptions
 
 export default MetricService

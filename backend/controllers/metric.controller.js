@@ -50,6 +50,8 @@ export const calculateAIImpact = async (req, res) => {
 	try {
 		const { teamId, projectId, timeframe = '24' } = req.query
 
+		console.log(teamId, projectId)
+
 		const [impactMetrics] = await Promise.resolve(
 			MetricService.calculateAIImpact(
 				{ teamId, projectId },
@@ -71,10 +73,12 @@ export const calculateAIImpact = async (req, res) => {
  */
 export const getTeamMetrics = async (req, res) => {
 	try {
-		const { teamId, timeframe = '24' } = parseInt(req.params.teamId, 10)
+		const teamId = parseInt(req.params.teamId, 10)
+		if (isNaN(teamId)) {
+			return res.status(400).json({ error: 'Invalid team ID' })
+		}
 
 		const teamData = await MetricService.getTeamMetrics({
-			maxAgeHours: parseInt(timeframe),
 			teamId,
 		})
 
@@ -88,17 +92,17 @@ export const getTeamMetrics = async (req, res) => {
 }
 
 /**
- * Team Projects
+ *   Projects
  */
 export const getProjectMetrics = async (req, res) => {
 	try {
-		const { projectId, timeframe = '24' } = parseInt(
-			req.params.projectId,
-			10,
-		)
+		const projectId = parseInt(req.params.projectId, 10)
+
+		if (isNaN(projectId)) {
+			return res.status(400).json({ error: 'Invalid project ID' })
+		}
 
 		const projectData = await MetricService.getProjectMetrics({
-			maxAgeHours: parseInt(timeframe),
 			projectId,
 		})
 
@@ -116,13 +120,13 @@ export const getProjectMetrics = async (req, res) => {
  */
 export const getEngineerMetrics = async (req, res) => {
 	try {
-		const { engineerId, timeframe = '24' } = parseInt(
-			req.params.engineerId,
-			10,
-		)
+		const engineerId = parseInt(req.params.engineerId, 10)
+
+		if (isNaN(engineerId)) {
+			return res.status(400).json({ error: 'Invalid engineer ID' })
+		}
 
 		const engineerData = await MetricService.getEngineerMetrics({
-			maxAgeHours: parseInt(timeframe),
 			engineerId,
 		})
 
@@ -140,13 +144,50 @@ export const getEngineerMetrics = async (req, res) => {
  */
 export const getCategoryMetrics = async (req, res) => {
 	try {
-		const { timeframe = '24' } = req.query
+		const category = req.params.category
+
+		if (typeof category !== 'string' || category.length === 0) {
+			return res.status(400).json({ error: 'Invalid category' })
+		}
 
 		const categoryData = await MetricService.getCategoryMetrics({
-			maxAgeHours: parseInt(timeframe),
+			category,
 		})
 
 		res.json(categoryData)
+	} catch (error) {
+		console.error('Dashboard data fetch error:', error)
+		res.status(500).json({
+			error: 'Failed to retrieve category metrics data',
+		})
+	}
+}
+/**
+ * Categories
+ */
+export const getCategoriesMetrics = async (req, res) => {
+	try {
+		const { timeframe = '24' } = req.query
+
+		const categoriesData = await MetricService.getCategoriesMetrics({
+			maxAgeHours: parseInt(timeframe),
+		})
+
+		res.json(categoriesData)
+	} catch (error) {
+		console.error('Dashboard data fetch error:', error)
+		res.status(500).json({
+			error: 'Failed to retrieve category metrics data',
+		})
+	}
+}
+
+//  AI Impact Summary
+export const getAIImpactSummary = async (req, res) => {
+	try {
+		const aiimpactSummary = await MetricService.getAIImpactSummary({})
+
+		res.json(aiimpactSummary)
 	} catch (error) {
 		console.error('Dashboard data fetch error:', error)
 		res.status(500).json({
@@ -183,6 +224,19 @@ export const refreshAllMetrics = async (req, res) => {
 	}
 }
 
+/**
+ * Get filter options
+ */
+export async function getFilterOptions(req, res) {
+	try {
+		const filterOptions = await MetricService.getFilterOptions()
+		res.json(filterOptions)
+	} catch (error) {
+		console.error('Error in getFilterOptions:', error)
+		res.status(500).json({ error: 'Failed to fetch all filter options' })
+	}
+}
+
 const MetricController = {}
 MetricController.getTeamMetrics = getTeamMetrics
 MetricController.getProjectMetrics = getProjectMetrics
@@ -190,6 +244,9 @@ MetricController.calculateAIImpact = calculateAIImpact
 MetricController.getAIImpactDashboard = getAIImpactDashboard
 MetricController.getEngineerMetrics = getEngineerMetrics
 MetricController.getCategoryMetrics = getCategoryMetrics
+MetricController.getCategoriesMetrics = getCategoriesMetrics
 MetricController.refreshAllMetrics = refreshAllMetrics
+MetricController.getAIImpactSummary = getAIImpactSummary
+MetricController.getFilterOptions = getFilterOptions
 
 export default MetricController

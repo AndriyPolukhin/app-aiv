@@ -9,7 +9,8 @@ dotenv.config()
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
-const FUNCTIONS_DIR = path.join(__dirname, 'functions', 'main')
+const FUNCTIONS_DIR = path.join(__dirname, 'functions')
+// const FUNCTIONS_DIR = path.join(__dirname, 'functions', 'main')
 
 export async function createDatabaseFunctions() {
 	try {

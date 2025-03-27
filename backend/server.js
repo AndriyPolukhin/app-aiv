@@ -5,20 +5,22 @@ import { sequelize, testConnection } from './config/db.js'
 import aiimpactRouter from './routes/aiimpact.routes.js'
 import dataRouter from './routes/data.routes.js'
 import metricRouter from './routes/metric.routes.js'
+import { corsOptions } from './utils/corsOptions.js'
 
 // Initialize Express app
 const app = express()
 const PORT = process.env.PORT || 5001
 
 // Middleware
-app.use(cors())
+app.use(cors(corsOptions))
 app.use(express.json())
+app.use(express.urlencoded({ extended: true }))
 app.use(morgan('dev'))
 
 // Routes
 app.use('/api/aiimpact', aiimpactRouter)
 app.use('/api/data', dataRouter)
-app.use('api/metric', metricRouter)
+app.use('/api/metrics', metricRouter)
 
 // Home route check
 app.get('/', (req, res) => {
