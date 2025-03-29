@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
     # PostgreSQL Database
     postgres:
@@ -19,15 +21,10 @@ services:
             interval: 10s
             timeout: 5s
             retries: 5
-        logging:
-            driver: json-file
-            options:
-                max-size: '50m'
-                max-file: '6'
         networks:
             - ai-impact-network
 
-    # Backend API Service (now includes data processing)
+    # Backend API Service
     backend:
         build:
             context: ./backend
@@ -35,7 +32,7 @@ services:
         container_name: ai-impact-backend
         restart: unless-stopped
         ports:
-            - '${API_PORT:-5000}:3000'
+            - '${API_PORT:-5000}:5000'
         depends_on:
             postgres:
                 condition: service_healthy
@@ -47,7 +44,26 @@ services:
             DB_PASSWORD: ${DB_PASSWORD:-postgres}
             DB_NAME: ${DB_NAME:-ai_impact}
             PORT: 5000
-            CORS_ORIGINS: http:localhost:3000
+            CORS_ORIGINS: http://localhost:3000
+        networks:
+            - ai-impact-network
+
+    # Data Processing Service
+    data-processing:
+        build:
+            context: ./data-processing
+            dockerfile: Dockerfile
+        container_name: ai-impact-data-processing
+        restart: unless-stopped
+        depends_on:
+            postgres:
+                condition: service_healthy
+        environment:
+            DB_HOST: postgres
+            DB_PORT: 5432
+            DB_USER: ${DB_USER:-postgres}
+            DB_PASSWORD: ${DB_PASSWORD:-postgres}
+            DB_NAME: ${DB_NAME:-ai_impact}
         volumes:
             - ./data:/app/data
         networks:
