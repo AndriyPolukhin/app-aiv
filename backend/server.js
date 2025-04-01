@@ -7,7 +7,10 @@ import dataRouter from './routes/data.routes.js'
 import metricRouter from './routes/metric.routes.js'
 import { corsOptions } from './utils/corsOptions.js'
 
-// Initialize Express app
+// Add swagger UI
+import { attachSwaggerUI } from './swagger/swagger.js'
+
+// Initialize Express application with all middleware and routs
 const app = express()
 const PORT = process.env.PORT || 5001
 
@@ -16,6 +19,9 @@ app.use(cors(corsOptions))
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use(morgan('dev'))
+
+// Attach Swagger documentation - must be before routes
+attachSwaggerUI(app)
 
 // Routes
 app.use('/api/aiimpact', aiimpactRouter)
@@ -56,6 +62,9 @@ async function startServer() {
 		app.listen(PORT, () => {
 			console.log(`Server running on port ${PORT}`)
 			console.log(`API available at http://localhost:${PORT}/api/metrics`)
+			console.log(
+				`API Documentation available at http://localhost:${PORT}/api-docs`,
+			)
 		})
 	} catch (error) {
 		console.error('Failed to start server:', error)

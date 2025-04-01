@@ -2,6 +2,31 @@ import { DataTypes } from 'sequelize'
 import { sequelize } from '../config/db.js'
 import { ModelEnums } from './enums.js'
 
+/**
+ * @swagger
+ * components:
+ * 	schemas:
+ * 		Team:
+ * 		  type: object
+ * 		  required:
+ * 			- team_name
+ * 			- engineer_ids
+ * 		  properties:
+ * 			team_id:
+ * 			  type: integer
+ * 			  description: The auto-generated id of the team
+ * 			  example: 1
+ * 			team_name:
+ * 			  type: string
+ * 			  description: The name of the team
+ * 			  example: "Backend development"
+ * 			engineer_ids:
+ * 			  type: array
+ * 			  items:
+ * 				type: integer
+ * 			  description: Array of engineer IDs assigned to this team
+ * 			  example: [101, 102, 103]
+ */
 export const Team = sequelize.define(
 	ModelEnums.TEAM,
 	{

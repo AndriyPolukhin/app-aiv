@@ -189,7 +189,14 @@ export async function getProjectsCount(req, res) {
 	}
 }
 
-const UtilsController = {}
+const UtilsController = {
+	/**
+	 * @swagger
+	 * tags:
+	 * 	 name: Teams
+	 * 	 description: Team management endpoints
+	 */
+}
 UtilsController.getTeamsData = getTeamsData
 UtilsController.getTeamsCount = getTeamsCount
 UtilsController.getJiraIssuesData = getJiraIssuesData
